@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>يوزرسيف – بروتوتايب الخطوات والمطلوب</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800&family=Reem+Kufi:wght@600&display=swap">
+<style>
+:root{--bg:#F6F1E7;--ink:#073B35;--mut:#4d6560;--card:#fff;--line:#d9d2c3;--g:#0B5F55;--g2:#073B35;--gold:#E3A92F;--red:#C8362B;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#06201d;--ink:#eef3ef;--mut:#a9bdb7;--card:#0c2e2a;--line:#1d4a44}}
+:root[data-theme="dark"]{--bg:#06201d;--ink:#eef3ef;--mut:#a9bdb7;--card:#0c2e2a;--line:#1d4a44}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:Cairo,Tahoma,sans-serif;line-height:1.7}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);background:var(--bg);z-index:10}
+.wrap{max-width:1000px;margin:0 auto;padding:24px 16px 64px}
+h1,h2{font-family:"Reem Kufi",Cairo,sans-serif;margin:0}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.2}
+.lead{color:var(--mut);max-width:62ch}
+.note{font-size:13px;color:var(--mut)}
+.step{margin-top:48px;border-top:3px solid var(--g);padding-top:16px}
+.step h2{font-size:26px}
+.step h2 span{display:inline-block;background:var(--g);color:#fff;border-radius:50%;width:36px;height:36px;text-align:center;line-height:36px;font-size:18px;margin-inline-start:8px}
+.req{margin:8px 0 16px;padding-inline-start:20px}
+.tag{display:inline-block;font-size:12px;background:var(--gold);color:#3a2a00;border-radius:4px;padding:0 8px;font-weight:600}
+.frame{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;color:#073B35;max-width:100%}
+.bar{background:#e9efec;padding:6px 12px;font-size:12px;display:flex;gap:6px;align-items:center;color:#4d6560}
+.bar i{width:9px;height:9px;border-radius:50%;background:#b9c8c3;display:inline-block}
+.pad{padding:16px}
+.grid{display:grid;gap:12px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.g4{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.hero{background:var(--g);color:#fff;padding:28px 20px;text-align:center}
+.hero b{font-family:"Reem Kufi",Cairo;font-size:34px;display:block}
+.btn{display:inline-block;border:0;border-radius:8px;padding:8px 18px;font:600 15px Cairo;cursor:pointer;background:var(--gold);color:#3a2a00}
+.btn.g{background:var(--g);color:#fff}.btn.r{background:#fbe4e1;color:var(--red)}
+.tile{border:1px solid #d9e3df;border-radius:8px;padding:12px;text-align:center;font-size:14px;background:#f7faf9}
+.tile svg{width:44px;height:44px;display:block;margin:0 auto 6px}
+.sw{display:flex;gap:8px;flex-wrap:wrap}
+.sw div{width:96px;border-radius:8px;overflow:hidden;border:1px solid var(--line);font-size:12px;background:var(--card);color:var(--ink)}
+.sw div i{display:block;height:52px}
+.logo{font-family:"Reem Kufi",Cairo;font-size:30px;background:var(--g);color:#fff;border-radius:10px;padding:18px;text-align:center}
+.post{aspect-ratio:4/5;border-radius:10px;padding:18px;display:flex;flex-direction:column;justify-content:space-between;color:#fff;background:var(--g)}
+.post b{font-family:"Reem Kufi",Cairo;font-size:26px;line-height:1.3}
+.post.two{background:var(--g2)}
+.ph{background:repeating-linear-gradient(45deg,#e3ebe8,#e3ebe8 8px,#d3dfdb 8px,#d3dfdb 16px);border-radius:8px;aspect-ratio:1;display:flex;align-items:center;justify-content:center;font-size:12px;color:#4d6560;text-align:center}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.steps span{font-size:12px;padding:2px 10px;border-radius:99px;background:#e3ebe8}
+.steps .on{background:var(--g);color:#fff}
+label{font-size:13px;display:block}
+input,select,textarea{font:inherit;width:100%;padding:6px 8px;border:1px solid #c5d3ce;border-radius:6px;background:#fff;color:#073B35}
+.sizes{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.chk{list-style:none;padding:0;margin:8px 0;font-size:14px}
+.chk li::before{content:"✔ ";color:#1c8a5a}.chk li.bad::before{content:"✖ ";color:var(--red)}.chk li.bad{color:var(--red)}
+.ok{background:#e4f3ec;color:#0b5f3a;padding:8px 12px;border-radius:8px;font-size:14px}
+.warn{background:#fbe4e1;color:var(--red);padding:8px 12px;border-radius:8px;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:8px;border-bottom:1px solid #e3ebe8;text-align:start}
+.st{font-size:12px;border-radius:99px;padding:1px 10px;background:#fdf0d2;color:#7a5600}
+.tl{display:flex;gap:0;margin:8px 0;overflow-x:auto}
+.tl div{flex:1;min-width:90px;text-align:center;font-size:12px;position:relative;padding-top:20px}
+.tl div::before{content:"";position:absolute;top:4px;left:0;right:0;height:3px;background:#cfdcd7}
+.tl div::after{content:"";position:absolute;top:-1px;left:50%;margin-left:-7px;width:14px;height:14px;border-radius:50%;background:#cfdcd7}
+.tl .d::before,.tl .d::after{background:var(--g)}
+.tee{width:140px;display:block;margin:auto}
+.pulse{animation:p 1.6s ease-in-out infinite}
+@keyframes p{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
+footer{margin-top:48px;color:var(--mut);font-size:13px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>موقع يوزرسيف: الخطوات والمطلوب بشكل بروتوتايب</h1>
+<p class="lead">كل خطوة مكتوب فيها المطلوب، وتحتها شكل تقريبي للناتج. الأشكال للتوضيح فقط (Demo). الألوان مأخوذة تقريباً من الصور المنشورة للعميل، ولازم تتأكد من القيم الرسمية قبل التنفيذ.</p>
+
+<section class="step"><h2><span>1</span>الهوية والألوان</h2>
+<ul class="req"><li>استخدم كل ألوان العميل الأصلية ومتغيّرش البالتة.</li><li>تطوير اللوجو مسموح، بشرط تعرض الأصلي وتشرح التغيير.</li><li>اللوجو لازم يبان واضح في الأحجام الصغيرة.</li></ul>
+<div class="grid g2">
+<div class="sw"><div><i style="background:#0B5F55"></i>أخضر أساسي<br>#0B5F55</div><div><i style="background:#073B35"></i>أخضر غامق<br>#073B35</div><div><i style="background:#E3A92F"></i>ذهبي<br>#E3A92F</div><div><i style="background:#F6F1E7"></i>كريمي<br>#F6F1E7</div><div><i style="background:#C8362B"></i>أحمر صغير<br>#C8362B</div></div>
+<div><div class="logo">يوزرسيف</div><p class="note">مكان اللوجو الأصلي. استبدله بالملف الحقيقي، وحط نسختك المطورة جنبه.</p></div></div></section>
+
+<section class="step"><h2><span>2</span>تصميمين سوشيال ميديا</h2>
+<ul class="req"><li>بوستين كاملين بفكرة واضحة ورسالة واحدة وزر تواصل.</li><li>مثال: بوست خدمة، وبوست يدعو العميل يبدأ طلب على الموقع.</li></ul>
+<div class="grid g2" style="max-width:600px">
+<div class="post"><b>اطبع اللي في دماغك على تيشيرت</b><span>تيشيرتات، هوديز، كابات<br><span class="btn">اطلب من الموقع</span></span></div>
+<div class="post two"><b>خلّيك مختلف.. خلّيك يوزرسيف</b><span>ارفع تصميمك وابدأ طلبك في دقيقتين<br><span class="btn">ابدأ طلبك</span></span></div></div></section>
+
+<section class="step"><h2><span>3</span>الصفحة الرئيسية والخدمات</h2>
+<ul class="req"><li>اشرح البزنس، اعرض كل الخدمات، وفيه زر "ابدأ طلبك" ظاهر دايماً.</li><li>كل خدمة ليها صفحة: صور، الخيارات المتاحة، المعلومات المطلوبة، وزر طلب.</li><li>الخدمات من القائمة المنشورة: ملابس، كابات، ستيكرز، أكواب، هدايا، كفرات موبايل.</li></ul>
+<div class="frame"><div class="bar"><i></i><i></i><i></i> yuzersef.example</div>
+<div class="hero"><b>خلّيك مختلف.. خلّيك يوزرسيف</b><p>طباعة وتخصيص في أسوان</p><span class="btn">ابدأ طلبك</span></div>
+<div class="pad grid g4">
+<div class="tile">👕<br>تيشيرتات وهوديز</div><div class="tile">🧢<br>كابات</div><div class="tile">🏷️<br>ستيكرز ولابلز</div><div class="tile">☕<br>أكواب وهدايا</div><div class="tile">📱<br>كفرات موبايل</div><div class="tile">🎨<br>تصميمات خاصة</div></div></div></section>
+
+<section class="step"><h2><span>4</span>البورتفوليو</h2>
+<ul class="req"><li>اعرض شغل العميل حسب القسم بصور واضحة.</li><li>زر "اطلب زي ده" يفتح الطلب بالمشروع كمرجع.</li><li>استخدم صور العميل المنشورة فقط، وقدّم أي صور تانية على إنها Demo.</li></ul>
+<div class="frame pad"><div class="steps"><span class="on">الكل</span><span>ملابس</span><span>أكواب</span><span>ستيكرز</span></div>
+<div class="grid g4"><div><div class="ph">صورة عمل<br>(Demo)</div><p class="note">تيشيرت<br><b style="color:var(--g)">اطلب زي ده</b></p></div><div><div class="ph">صورة عمل<br>(Demo)</div><p class="note">كوب<br><b style="color:var(--g)">اطلب زي ده</b></p></div><div><div class="ph">صورة عمل<br>(Demo)</div><p class="note">ستيكر<br><b style="color:var(--g)">اطلب زي ده</b></p></div><div><div class="ph">صورة عمل<br>(Demo)</div><p class="note">كاب<br><b style="color:var(--g)">اطلب زي ده</b></p></div></div></div></section>
+
+<section class="step"><h2><span>5</span>طلب كامل + الميزة المميزة</h2>
+<ul class="req"><li>خطوات الطلب: اختيار المنتج، المواصفات، التصميم، المراجعة والإرسال.</li><li>الطلب العادي يشمل: الخدمة، الكمية، الوصف، الاسم، الموبايل أو الإيميل، التاريخ المطلوب، وطريقة الاستلام.</li><li>الملابس والكابات: لون، مقاسات (المجموع = الكمية)، مكان الطباعة. أما الأكواب والكفرات: النص أو موديل الموبايل، من غير مقاسات.</li><li>الميزة المميزة (مثال): مساعد بيكشف النواقص قبل الإرسال. جرّبه تحت.</li><li>بعد الإرسال يظهر رقم طلب. التاريخ المطلوب طلب مش وعد بالتسليم.</li></ul>
+<div class="frame"><div class="bar"><i></i><i></i><i></i> ابدأ طلبك</div><div class="pad">
+<div class="steps"><span>المنتج</span><span>المواصفات</span><span class="on">التصميم</span><span>المراجعة</span></div>
+<div class="grid g2"><div>
+<label>المنتج<select><option>تيشيرت (Demo)</option></select></label>
+<label>الكمية الكلية<input id="qty" type="number" value="10" min="1"></label>
+<label>المقاسات (المجموع لازم = الكمية)</label>
+<div class="sizes"><input class="sz" type="number" value="2" aria-label="S"><input class="sz" type="number" value="3" aria-label="M"><input class="sz" type="number" value="3" aria-label="L"><input class="sz" type="number" value="1" aria-label="XL"><input class="sz" type="number" value="0" aria-label="XXL"></div>
+<label>مكان الطباعة<select id="pos"><option value="">اختر مكان</option><option>الصدر</option><option>الضهر</option></select></label>
+<label><input id="art" type="checkbox" style="width:auto"> تم رفع التصميم</label></div>
+<div><b>مساعد جاهزية الطلب</b><ul class="chk" id="chk"></ul><div id="msg"></div><p><button class="btn g" id="send">أرسل الطلب</button></p></div></div></div></div></section>
+
+<section class="step"><h2><span>6</span>لوحة تحكم صاحب المحل</h2>
+<ul class="req"><li>صفحة منفصلة ومحمية.</li><li>صاحب المحل يبحث في الطلبات، يفتح الملفات، يوافق أو يرفض، ويسجّل تاريخ كل تحديث.</li><li>يقدر يعدّل الخدمات والخيارات وصور البورتفوليو وبيانات التواصل من غير كود.</li><li>الرسايل مع العميل متربطة بالطلب نفسه.</li></ul>
+<div class="frame"><div class="bar"><i></i><i></i><i></i> /admin</div><div class="pad grid g2">
+<div><table><tr><th>رقم</th><th>الخدمة</th><th>الحالة</th></tr><tr><td>#1042</td><td>تيشيرت × 10</td><td><span class="st" id="st">قيد المراجعة</span></td></tr><tr><td>#1041</td><td>أكواب × 4</td><td><span class="st">معتمد</span></td></tr></table><p class="note">بيانات Demo</p></div>
+<div><b>طلب #1042</b><p class="note">تيشيرت أسود، 10 قطع، طباعة على الصدر، ملف التصميم مرفق.</p>
+<p><button class="btn g" onclick="d('تم الاعتماد')">اعتماد</button> <button class="btn r" onclick="d('مرفوض')">رفض</button></p>
+<label>رسالة للعميل<textarea rows="2">تمام، هنبدأ التنفيذ.</textarea></label></div></div></div></section>
+
+<section class="step"><h2><span>7</span>تتبع الطلب للعميل</h2>
+<ul class="req"><li>العميل يشوف القرار والحالة الحالية والملاحظات والخطوة الجاية.</li><li>الدخول محمي (مثلاً رقم الطلب + الموبايل)، وملفات كل عميل خاصة.</li></ul>
+<div class="frame pad"><b>طلب #1042</b> <span class="st">معتمد</span>
+<div class="tl"><div class="d">تم الإرسال</div><div class="d">قيد المراجعة</div><div class="d">معتمد</div><div>قيد التنفيذ</div><div>جاهز للاستلام</div></div>
+<div class="ok">الخطوة الجاية: هنتواصل معاك لتأكيد التفاصيل. التاريخ المطلوب طلب وليس وعد بالتسليم.</div></div></section>
+
+<section class="step"><h2><span>8</span>حركة بغرض + طرق التواصل</h2>
+<ul class="req"><li>GIF أو أنيميشن خفيف بيوضّح خطوة (مثلاً مكان الطباعة)، وفيه بديل ثابت لمن يفضّل من غير حركة.</li><li>طرق تواصل ظاهرة ومعتمدة: واتساب (الرقم المنشور 01116891025، يتأكد قبل الإطلاق) وروابط السوشيال.</li></ul>
+<div class="frame pad grid g2"><div><svg class="tee" viewBox="0 0 140 130" aria-label="تيشيرت"><path d="M45 8 L10 30 L24 55 L38 48 L38 122 L102 122 L102 48 L116 55 L130 30 L95 8 Q70 28 45 8Z" fill="#111"/><rect class="pulse" x="52" y="48" width="36" height="32" rx="4" fill="none" stroke="#E3A92F" stroke-width="3" stroke-dasharray="5 4"/><text x="70" y="68" fill="#E3A92F" font-size="9" text-anchor="middle">صدر</text></svg><p class="note" style="text-align:center">مكان الطباعة بيومض، ويثبت لو الحركة مقفولة.</p></div>
+<div><b>تواصل معانا</b><p><span class="btn g">واتساب: 01116891025</span></p><p class="note">فيسبوك · إنستجرام · تيك توك<br>العنوان والإيميل ومواعيد العمل: تُضاف بعد التأكيد فقط.</p></div></div></section>
+
+<footer>أي بيانات أو صور في الأشكال دي Demo ومش معلومات مؤكدة عن البزنس. ألوان الصفحة المحيطة بالمثال خاصة بالعرض فقط.</footer>
+</div>
+<script>
+function d(t){document.getElementById('st').textContent=t}
+var q=document.getElementById('qty'),sz=document.querySelectorAll('.sz'),pos=document.getElementById('pos'),art=document.getElementById('art'),chk=document.getElementById('chk'),msg=document.getElementById('msg');
+function run(){var s=0;sz.forEach(function(i){s+=+i.value||0});var n=+q.value||0;
+var r=[[n>0,'المنتج والكمية: مكتملة','الكمية ناقصة'],[s===n,'المقاسات مطابقة للكمية','المقاسات ('+s+') لا تساوي الكمية ('+n+')'],[art.checked,'التصميم مرفق','ارفع التصميم أو اطلب مساعدة في التصميم'],[!!pos.value,'مكان الطباعة محدد','اختر مكان الطباعة للمتابعة']];
+var ok=true;chk.innerHTML='';r.forEach(function(x){var li=document.createElement('li');li.textContent=x[0]?x[1]:x[2];if(!x[0]){li.className='bad';ok=false}chk.appendChild(li)});
+window.ready=ok;msg.innerHTML='<div class="'+(ok?'ok':'warn')+'">'+(ok?'طلبك جاهز للإرسال.':'طلبك قريب من الجاهزية. صلّح النقاط الحمراء.')+'</div>'}
+document.querySelectorAll('input,select').forEach(function(e){e.addEventListener('input',run);e.addEventListener('change',run)});
+document.getElementById('send').onclick=function(){run();if(window.ready)msg.innerHTML='<div class="ok">تم الإرسال. رقم طلبك: #1043 (Demo)</div>'};
+run();
+</script>
+</body>
+</html>

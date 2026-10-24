@@ -1,0 +1,6 @@
+{
+  "name": "يوزرسيف للطباعة والتخصيص | Yuzersef Aswan",
+  "description": "منصة طلب وتتبع خدمات الطباعة والهويات البصرية بأسوان - يوزرسيف (Yuzersef) لخدمات التيشرتات، الهوديز، الكابات، الاستيكرات، الأكواب، وجرابات الهواتف",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

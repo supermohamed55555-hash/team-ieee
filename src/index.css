@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Reem+Kufi:wght@400;500;600;700&display=swap');
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+  /* ═══════════════════════════════════════════
+     UserSafe Official Brand Palette
+     Source: HTML Presentation + Brand Assets
+  ═══════════════════════════════════════════ */
+
+  /* Core brand */
+  --color-brand-paper: #F6F1E7;     /* Warm cream paper */
+  --color-brand-green: #0B5F55;     /* Primary green */
+  --color-brand-deep: #073B35;      /* Deep ink green */
+  --color-brand-gold: #E3A92F;      /* Gold accent */
+  --color-brand-red: #C8362B;       /* Error / warning */
+  --color-brand-muted: #4d6560;     /* Muted text */
+  --color-brand-line: #d9d2c3;      /* Dividers */
+
+  /* Green scale */
+  --color-primary-50: #f0fdf9;
+  --color-primary-100: #ccfbef;
+  --color-primary-200: #9af5e1;
+  --color-primary-300: #5ee7cf;
+  --color-primary-400: #2ccbb7;
+  --color-primary-500: #14af9d;
+  --color-primary-600: #0B5F55;
+  --color-primary-700: #073B35;
+  --color-primary-800: #063f3d;
+  --color-primary-900: #012C2B;
+  --color-primary-950: #001716;
+
+  /* Font */
+  --font-sans: 'IBM Plex Sans Arabic', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-display: 'Reem Kufi', 'IBM Plex Sans Arabic', system-ui, sans-serif;
+
+  /* Border radius */
+  --radius-lg: 0.75rem;
+  --radius-md: 0.5rem;
+  --radius-sm: 0.25rem;
+
+  /* Animations */
+  --animate-slide-up: slide-up 0.5s ease-out;
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-slide-in-right: slide-in-right 0.4s ease-out;
+  --animate-pulse-slow: pulse-slow 3s ease-in-out infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-thread-draw: thread-draw 3s ease-in-out forwards;
+  --animate-stitch: stitch-appear 0.6s ease-out forwards;
+  --animate-gold-shimmer: gold-shimmer 3s ease-in-out infinite;
+  --animate-slide-in-left: slide-in-left 0.3s ease-out;
+  --animate-marquee: marquee-rtl 32s linear infinite;
+}
+
+/* ═══ Keyframes ═══ */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { opacity: 0; transform: translateX(16px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pulse-slow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes thread-draw {
+  0% { stroke-dashoffset: 1000; opacity: 0.3; }
+  30% { opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 1; }
+}
+
+@keyframes stitch-appear {
+  0% { opacity: 0; transform: scale(0.8); }
+  60% { transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes gold-shimmer {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+@keyframes needle-move {
+  0% { transform: translate(0, 0) rotate(-45deg); }
+  50% { transform: translate(8px, -8px) rotate(-45deg); }
+  100% { transform: translate(0, 0) rotate(-45deg); }
+}
+
+@keyframes needle-pierce {
+  0%, 100% {
+    transform: translateY(0px) rotate(-15deg);
+  }
+  45% {
+    transform: translateY(16px) rotate(-15deg);
+  }
+  55% {
+    transform: translateY(18px) rotate(-15deg);
+  }
+  75% {
+    transform: translateY(4px) rotate(-15deg);
+  }
+}
+
+@keyframes fabric-ripple {
+  0% {
+    transform: scale(0.3);
+    opacity: 0.9;
+    stroke-width: 2.5;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+    stroke-width: 0.5;
+  }
+}
+
+@keyframes thread-flow {
+  0% {
+    stroke-dashoffset: 200;
+  }
+  100% {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes light-sweep {
+  0% {
+    transform: translateX(-150%) skewX(-20deg);
+  }
+  100% {
+    transform: translateX(250%) skewX(-20deg);
+  }
+}
+
+@keyframes marquee-rtl {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-single-rtl {
+  0% {
+    transform: translate3d(calc(100% + 4px), 0, 0);
+  }
+  100% {
+    transform: translate3d(calc(-100cqw - 4px), 0, 0);
+  }
+}
+
+@supports not (width: 1cqw) {
+  @keyframes marquee-single-rtl {
+    0% {
+      transform: translate3d(calc(100% + 4px), 0, 0);
+    }
+    100% {
+      transform: translate3d(calc(-100vw - 4px), 0, 0);
+    }
+  }
+}
+
+
+/* ═══ Reduced motion ═══ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ═══ Base styles ═══ */
+@layer base {
+  body {
+    background-color: #F6F1E7;
+    @apply text-slate-900 antialiased;
+    font-family: var(--font-sans);
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-[#0B5F55];
+  }
+
+  html {
+    direction: rtl;
+    scroll-behavior: smooth;
+  }
+
+  /* Display font utility */
+  .font-display {
+    font-family: var(--font-display);
+  }
+}
+
+/* ═══ Thread/Embroidery Texture ═══ */
+@layer utilities {
+  .thread-texture {
+    background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q5 5 10 10 Q15 15 20 10' stroke='%23d9d2c3' fill='none' stroke-width='0.5' opacity='0.3'/%3E%3C/svg%3E");
+  }
+
+  .animate-marquee-infinite {
+    display: flex;
+    width: max-content;
+    animation: marquee-rtl 32s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-marquee-infinite:hover,
+  .animate-marquee-infinite:focus-within {
+    animation-play-state: paused;
+  }
+
+  .animate-marquee-single {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: marquee-single-rtl 18s linear infinite;
+    will-change: transform;
+  }
+
+  .animate-marquee-single:hover,
+  .animate-marquee-single:focus-within {
+    animation-play-state: paused;
+  }
+}
