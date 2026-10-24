@@ -702,8 +702,10 @@ export const OrderCheckout: React.FC = () => {
                       <div>
                         <p className="font-bold text-[#073B35]">{it.name}</p>
                         <p className="text-[11px] text-[#5B6B68]">
-                          {it.selectedSize ? `مقاس: ${it.selectedSize} | ` : ''}
-                          الكمية: {it.quantity}
+                          {it.sizeBreakdown && Object.keys(it.sizeBreakdown).length > 0
+                            ? `المقاسات: ${Object.entries(it.sizeBreakdown).map(([sz, q]) => `${q}× ${sz}`).join(' · ')} | `
+                            : it.selectedSize ? `مقاس: ${it.selectedSize} | ` : ''}
+                          الكمية: {it.quantity} قطعة
                         </p>
                       </div>
                     </div>
@@ -1306,8 +1308,11 @@ export const OrderCheckout: React.FC = () => {
                       </div>
                       <div className="truncate">
                         <p className="font-bold text-[#073B35] truncate">{it.name}</p>
-                        <p className="text-[10px] text-[#5B6B68]">
-                          {it.quantity} × {it.price} ج.م
+                        <p className="text-[10px] text-[#5B6B68] truncate">
+                          {it.sizeBreakdown && Object.keys(it.sizeBreakdown).length > 0
+                            ? `(${Object.entries(it.sizeBreakdown).map(([sz, q]) => `${q}× ${sz}`).join(', ')}) `
+                            : it.selectedSize ? `(${it.selectedSize}) ` : ''}
+                          {it.quantity} قطعة × {it.price} ج.م
                         </p>
                       </div>
                     </div>

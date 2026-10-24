@@ -957,7 +957,13 @@ export const OrdersManagement: React.FC = () => {
                               <span>{it.selectedColor.name}</span>
                             </span>
                           )}
-                          {it.selectedSize && <span>| مقاس: {it.selectedSize}</span>}
+                          {it.sizeBreakdown && Object.keys(it.sizeBreakdown).length > 0 ? (
+                            <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-bold text-[11px]">
+                              مقاسات: {Object.entries(it.sizeBreakdown).map(([sz, q]) => `${q}× ${sz}`).join(' | ')}
+                            </span>
+                          ) : (
+                            it.selectedSize && <span>| مقاس: {it.selectedSize}</span>
+                          )}
                           {it.customization?.zoneName && (
                             <span className="text-[#0B5F55] font-bold">
                               | منطقة: {it.customization.zoneName}

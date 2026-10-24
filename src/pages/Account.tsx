@@ -443,7 +443,13 @@ export const Account: React.FC = () => {
                                         <span>{item.selectedColor.name}</span>
                                       </span>
                                     )}
-                                    {item.selectedSize && <span>| مقاس: {item.selectedSize}</span>}
+                                    {item.sizeBreakdown && Object.keys(item.sizeBreakdown).length > 0 ? (
+                                      <span className="bg-emerald-50 text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded-md font-bold text-[10px]">
+                                        مقاسات: {Object.entries(item.sizeBreakdown).map(([sz, q]) => `${q}× ${sz}`).join(' | ')}
+                                      </span>
+                                    ) : (
+                                      item.selectedSize && <span>| مقاس: {item.selectedSize}</span>
+                                    )}
                                     <span>| الكمية: {item.quantity}</span>
                                   </div>
                                 </div>

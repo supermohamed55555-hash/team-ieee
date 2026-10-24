@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import {
   ArrowRight,
@@ -98,6 +98,81 @@ export const ProductCustomizer: React.FC = () => {
   const [selectedColorHex, setSelectedColorHex] = useState<string>('#18181B');
   const [customHex, setCustomHex] = useState<string>('#18181B');
   const [selectedCustomSize, setSelectedCustomSize] = useState<string>('L');
+  const [sizeQuantities, setSizeQuantities] = useState<Record<string, number>>({ L: 1 });
+  const [flatQuantity, setFlatQuantity] = useState<number>(1);
+
+  // Update single size quantity (+1 / -1)
+  const updateSizeQuantity = (szName: string, delta: number) => {
+    setSizeQuantities((prev) => {
+      const current = prev[szName] || 0;
+      const stockLimit = selectedProduct?.sizeStock?.[szName] ?? 999;
+      const next = Math.max(0, Math.min(stockLimit, current + delta));
+      return { ...prev, [szName]: next };
+    });
+  };
+
+  // Direct manual input for size quantity
+  const handleSetSizeQuantity = (szName: string, value: number) => {
+    setSizeQuantities((prev) => {
+      const stockLimit = selectedProduct?.sizeStock?.[szName] ?? 999;
+      const cleanVal = isNaN(value) ? 0 : Math.max(0, Math.min(stockLimit, value));
+      return { ...prev, [szName]: cleanVal };
+    });
+  };
+
+  // Preset helper: select only one size (1 piece)
+  const setSingleSize = (szName: string) => {
+    if (!selectedProduct?.sizeStock) return;
+    const next: Record<string, number> = {};
+    Object.keys(selectedProduct.sizeStock).forEach((sz) => {
+      next[sz] = sz === szName ? 1 : 0;
+    });
+    setSelectedCustomSize(szName);
+    setSizeQuantities(next);
+  };
+
+  // Reset all size quantities to 0
+  const resetAllSizeQuantities = () => {
+    if (!selectedProduct?.sizeStock) return;
+    const next: Record<string, number> = {};
+    Object.keys(selectedProduct.sizeStock).forEach((sz) => {
+      next[sz] = 0;
+    });
+    setSizeQuantities(next);
+  };
+
+  // Total quantity calculation across all sizes or flat quantity
+  const totalQuantity = useMemo(() => {
+    if (selectedProduct?.hasSizes && selectedProduct.sizeStock && Object.keys(selectedProduct.sizeStock).length > 0) {
+      return Object.values(sizeQuantities).reduce((acc, q) => acc + (Number(q) || 0), 0);
+    }
+    return Math.max(1, Number(flatQuantity) || 1);
+  }, [selectedProduct, sizeQuantities, flatQuantity]);
+
+  // Active size breakdown map (only sizes with qty > 0)
+  const activeSizeBreakdown = useMemo(() => {
+    const res: Record<string, number> = {};
+    Object.entries(sizeQuantities).forEach(([sz, q]) => {
+      if (q > 0) res[sz] = q;
+    });
+    return res;
+  }, [sizeQuantities]);
+
+  // Formatted string representation of size breakdown (e.g. "2× M · 5× L · 3× XL")
+  const formattedSizeBreakdown = useMemo(() => {
+    const entries = Object.entries(activeSizeBreakdown);
+    if (entries.length === 0) return '';
+    return entries.map(([sz, q]) => `${q}× ${sz}`).join(' · ');
+  }, [activeSizeBreakdown]);
+
+  // Unit price and total price
+  const unitPrice = useMemo(() => {
+    return parsePriceToNumber(selectedProduct?.price || 250);
+  }, [selectedProduct]);
+
+  const totalPrice = useMemo(() => {
+    return unitPrice * totalQuantity;
+  }, [unitPrice, totalQuantity]);
 
   // Print Zones
   const [zones, setZones] = useState<PrintZone[]>([]);
@@ -353,13 +428,21 @@ export const ProductCustomizer: React.FC = () => {
     const initialView = prod.defaultView || 'front';
     setActiveView(initialView);
 
-    // Set initial size
+    // Set initial size & quantities
     if (prod.hasSizes && prod.sizeStock && Object.keys(prod.sizeStock).length > 0) {
       const allSizes = Object.keys(prod.sizeStock);
       const inStock = allSizes.find((s) => (prod.sizeStock?.[s] || 0) > 0) || allSizes[0];
       setSelectedCustomSize(inStock);
+
+      const initialQtys: Record<string, number> = {};
+      allSizes.forEach((sz) => {
+        initialQtys[sz] = sz === inStock ? 1 : 0;
+      });
+      setSizeQuantities(initialQtys);
     } else {
       setSelectedCustomSize('مقاس موحد');
+      setSizeQuantities({});
+      setFlatQuantity(1);
     }
 
     // Clone default zones
@@ -1400,6 +1483,10 @@ export const ProductCustomizer: React.FC = () => {
         name: selectedProduct?.name,
         colorHex: selectedColorHex,
         view: activeView,
+        totalQuantity,
+        sizeBreakdown: activeSizeBreakdown,
+        unitPrice,
+        totalPrice,
       },
       zones: zones,
       logos: logos.map((l) => ({
@@ -1432,15 +1519,33 @@ export const ProductCustomizer: React.FC = () => {
   };
 
   const handleSendOrder = () => {
+    if (totalQuantity <= 0) {
+      setStatusMessage('يرجى تحديد كمية المقاسات المطلوبة (قطعة واحدة على الأقل)!');
+      return;
+    }
+
     // Generate WhatsApp direct text with full specs for all logos
     const frontLogos = logos.filter((l) => l.view === 'front');
     const backLogos = logos.filter((l) => l.view === 'back');
 
     let text = `مرحباً يوزرسيف أسوان، أريد تنفيذ طلب لمنتج: ${selectedProduct?.name || 'منتج مخصص'}\n`;
     text += `اللون المختار: ${selectedColorHex}\n`;
-    if (selectedProduct?.hasSizes) {
-      text += `المقاس المختار: ${selectedCustomSize}\n`;
+
+    if (selectedProduct?.hasSizes && Object.keys(activeSizeBreakdown).length > 0) {
+      text += `📦 تفاصيل المقاسات والكميات المطلوبة:\n`;
+      Object.entries(activeSizeBreakdown).forEach(([sz, q]) => {
+        text += `  • مقاس ${sz}: ${q} قطعة\n`;
+      });
+      text += `إجمالي الكمية: ${totalQuantity} قطعة\n`;
+    } else {
+      text += `الكمية المطلوبة: ${totalQuantity} قطعة\n`;
+      if (selectedProduct?.baseType === 'sticker') {
+        text += `مقاس الاستيكر: ${stickerCm}×${stickerCm} سم (${stickerShape})\n`;
+      }
     }
+
+    text += `سعر القطعة: ${unitPrice} ج.م\n`;
+    text += `إجمالي السعر التقديري: ${totalPrice.toLocaleString()} ج.م\n`;
     text += `إجمالي الشعارات المضافة: ${logos.length} شعار\n\n`;
 
     if (frontLogos.length > 0) {
@@ -1469,6 +1574,11 @@ export const ProductCustomizer: React.FC = () => {
   const [cartSuccessNotice, setCartSuccessNotice] = useState(false);
 
   const handleAddToCart = () => {
+    if (totalQuantity <= 0) {
+      setStatusMessage('يرجى تحديد كمية المقاسات المطلوبة أولاً!');
+      return;
+    }
+
     let previewDataUrl: string | undefined = undefined;
     try {
       if (canvasRef.current) {
@@ -1499,15 +1609,22 @@ export const ProductCustomizer: React.FC = () => {
     if (frontLogos.length > 0) viewsList.push(`أمام (${frontLogos.length})`);
     if (backLogos.length > 0) viewsList.push(`خلف (${backLogos.length})`);
 
+    const sizeSummary = selectedProduct?.hasSizes
+      ? (formattedSizeBreakdown || selectedCustomSize || 'مقاسات متنوعة')
+      : selectedProduct?.baseType === 'sticker'
+      ? `${stickerCm}×${stickerCm} سم (${stickerShape})`
+      : 'Free Size';
+
     addToCart({
       productId: selectedProduct?.id || 'custom-item',
       name: selectedProduct?.name || 'منتج مخصص',
-      subtitle: `${selectedProduct?.subtitle || 'مخصص في استوديو يوزرسيف'} · (${logos.length} شعارات)`,
-      price: parsePriceToNumber(selectedProduct?.price || 250),
-      originalPriceStr: selectedProduct?.price || '250 ج.م',
-      quantity: 1,
+      subtitle: `${selectedProduct?.subtitle || 'مخصص في استوديو يوزرسيف'} · (${totalQuantity} قطعة)`,
+      price: unitPrice,
+      originalPriceStr: selectedProduct?.price || `${unitPrice} ج.م`,
+      quantity: totalQuantity,
       selectedColor: selectedColorObj,
-      selectedSize: selectedProduct?.hasSizes ? selectedCustomSize : 'Free Size',
+      selectedSize: sizeSummary,
+      sizeBreakdown: selectedProduct?.hasSizes ? activeSizeBreakdown : undefined,
       imageUrl: selectedProduct?.imageUrl || '/services-cards/card-hoodie.png',
       customization: {
         hasCustomDesign: true,
@@ -1515,11 +1632,13 @@ export const ProductCustomizer: React.FC = () => {
         zoneName: logos.map((l) => l.name).join(' + '),
         view: viewsList.join(' | ') || (activeView === 'front' ? 'الواجهة الأمامية' : 'الجهة الخلفية'),
         artworkName: `${logos.length} شعارات: ` + logos.map((l) => l.fileName || l.name).join(', '),
-        notes: `عدد الشعارات: ${logos.length}. ${logos.map((l) => `[${l.name} (${l.view === 'front' ? 'أمام' : 'خلف'}): حجم ${l.scale}%]`).join('، ')}`,
+        notes: `عدد الشعارات: ${logos.length}. ${logos.map((l) => `[${l.name} (${l.view === 'front' ? 'أمام' : 'خلف'}): حجم ${l.scale}%]`).join('، ')}${
+          Object.keys(activeSizeBreakdown).length > 0 ? ` | تفصيل المقاسات: ${formattedSizeBreakdown}` : ''
+        }`,
       },
     });
 
-    setStatusMessage('تمت إضافة التصميم المخصص بنجاح إلى سلة المشتريات!');
+    setStatusMessage(`تمت إضافة التصميم (${totalQuantity} قطعة) بنجاح إلى سلة المشتريات!`);
     setCartSuccessNotice(true);
     setTimeout(() => setCartSuccessNotice(false), 6000);
   };
@@ -2077,55 +2196,214 @@ export const ProductCustomizer: React.FC = () => {
                 </div>
               </div>
 
-              {/* Size Selector if product has sizes */}
-              {selectedProduct?.hasSizes && selectedProduct.sizeStock && Object.keys(selectedProduct.sizeStock).length > 0 && (
-                <div className="pt-3 border-t border-[#D7DEDB]/60 space-y-2">
+              {/* Size & Quantity Selector */}
+              {selectedProduct?.hasSizes && selectedProduct.sizeStock && Object.keys(selectedProduct.sizeStock).length > 0 ? (
+                <div className="pt-3 border-t border-[#D7DEDB]/60 space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-bold text-[#5B6B68]">
-                      المقاس المطلوب: <strong className="text-[#073B35] font-black">{selectedCustomSize}</strong>
-                    </label>
-                    {selectedProduct.sizeStock[selectedCustomSize] !== undefined && (
+                    <div>
+                      <label className="text-xs font-black text-[#073B35] block">
+                        تحديد المقاسات والكميات:
+                      </label>
+                      <span className="text-[10px] text-[#5B6B68]">
+                        حدد كمية كل مقاس تريده لهذا التصميم
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
                       <span
-                        className={`text-[11px] font-bold ${
-                          selectedProduct.sizeStock[selectedCustomSize] <= 0
-                            ? 'text-rose-600'
-                            : selectedProduct.sizeStock[selectedCustomSize] <= 5
-                            ? 'text-amber-600'
-                            : 'text-emerald-700'
+                        className={`text-xs font-black px-2.5 py-1 rounded-full transition-all ${
+                          totalQuantity > 0
+                            ? 'bg-[#0B5F55] text-white shadow-xs'
+                            : 'bg-rose-100 text-rose-700'
                         }`}
                       >
-                        {selectedProduct.sizeStock[selectedCustomSize] <= 0
-                          ? '⚠️ نفد هذا المقاس'
-                          : `(متوفر: ${selectedProduct.sizeStock[selectedCustomSize]} قطعة)`}
+                        {totalQuantity > 0 ? `المجموع: ${totalQuantity} قطعة` : '0 قطعة'}
                       </span>
-                    )}
+                    </div>
                   </div>
 
-                  <div className="flex flex-wrap gap-2">
-                    {Object.entries(selectedProduct.sizeStock).map(([szName, szQty]) => {
-                      const isOut = Number(szQty) <= 0;
-                      const isSelected = selectedCustomSize === szName;
+                  {/* Size Quantities Cards Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Object.entries(selectedProduct.sizeStock).map(([szName, maxStock]) => {
+                      const isOutOfStock = Number(maxStock) <= 0;
+                      const currentQty = sizeQuantities[szName] || 0;
+                      const hasSelected = currentQty > 0;
+
                       return (
-                        <button
+                        <div
                           key={szName}
-                          type="button"
-                          disabled={isOut}
-                          onClick={() => setSelectedCustomSize(szName)}
-                          className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                            isSelected
-                              ? 'bg-[#0B5F55] text-white shadow-xs scale-102 ring-2 ring-[#0B5F55]/20'
-                              : isOut
-                              ? 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-60 line-through'
-                              : 'bg-white text-slate-700 border border-[#D7DEDB] hover:border-[#0B5F55] hover:bg-[#F6F1E7]'
+                          className={`p-2.5 rounded-xl border transition-all flex items-center justify-between gap-2 ${
+                            isOutOfStock
+                              ? 'bg-slate-100/70 border-slate-200 opacity-60'
+                              : hasSelected
+                              ? 'bg-emerald-50/80 border-[#0B5F55] ring-1 ring-[#0B5F55]/20 shadow-xs'
+                              : 'bg-white border-[#D7DEDB] hover:border-slate-300'
                           }`}
                         >
-                          <span>{szName}</span>
-                          <span className={`text-[10px] ${isSelected ? 'text-emerald-200' : 'text-slate-400'}`}>
-                            ({szQty})
-                          </span>
-                        </button>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`w-7 h-7 rounded-lg flex items-center justify-center font-black text-xs ${
+                                  hasSelected ? 'bg-[#0B5F55] text-white' : 'bg-slate-100 text-slate-800'
+                                }`}
+                              >
+                                {szName}
+                              </span>
+                              <span
+                                className={`text-[10px] font-bold ${
+                                  isOutOfStock
+                                    ? 'text-rose-600'
+                                    : Number(maxStock) <= 5
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-700'
+                                }`}
+                              >
+                                {isOutOfStock ? 'نفد ⚠️' : `(متوفر: ${maxStock})`}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Stepper Controls */}
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              disabled={isOutOfStock || currentQty <= 0}
+                              onClick={() => updateSizeQuantity(szName, -1)}
+                              className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                              title="إنقاص الكمية"
+                            >
+                              -
+                            </button>
+
+                            <input
+                              type="number"
+                              min="0"
+                              max={maxStock}
+                              disabled={isOutOfStock}
+                              value={currentQty}
+                              onChange={(e) => handleSetSizeQuantity(szName, parseInt(e.target.value) || 0)}
+                              className="w-11 h-7 rounded-lg border border-[#D7DEDB] bg-white text-center font-black text-xs text-[#073B35] focus:outline-none focus:ring-1 focus:ring-[#0B5F55] disabled:bg-slate-100"
+                            />
+
+                            <button
+                              type="button"
+                              disabled={isOutOfStock || currentQty >= Number(maxStock)}
+                              onClick={() => updateSizeQuantity(szName, 1)}
+                              className="w-7 h-7 rounded-lg bg-[#0B5F55] hover:bg-[#073B35] text-white flex items-center justify-center font-bold text-sm transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                              title="زيادة الكمية"
+                            >
+                              +
+                            </button>
+                          </div>
+                        </div>
                       );
                     })}
+                  </div>
+
+                  {/* Quick Preset Buttons & Reset */}
+                  <div className="flex flex-wrap items-center justify-between gap-1.5 pt-1 text-xs">
+                    <div className="flex flex-wrap items-center gap-1">
+                      <span className="text-[10px] text-[#5B6B68]">اختيار سريع:</span>
+                      {Object.keys(selectedProduct.sizeStock).slice(0, 3).map((sz) => (
+                        <button
+                          key={sz}
+                          type="button"
+                          onClick={() => setSingleSize(sz)}
+                          className="px-2 py-0.5 rounded-md bg-white border border-[#D7DEDB] hover:border-[#0B5F55] text-[10px] font-bold text-slate-700 hover:bg-emerald-50 transition-colors cursor-pointer"
+                        >
+                          قطعة {sz}
+                        </button>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={resetAllSizeQuantities}
+                      className="text-[10px] text-slate-500 hover:text-rose-600 underline cursor-pointer"
+                    >
+                      تصفير الكميات
+                    </button>
+                  </div>
+
+                  {/* Summary & Price preview box */}
+                  <div
+                    className={`p-3 rounded-xl border text-xs transition-all ${
+                      totalQuantity > 0
+                        ? 'bg-emerald-50/70 border-emerald-200 text-[#073B35]'
+                        : 'bg-amber-50/70 border-amber-200 text-amber-900'
+                    }`}
+                  >
+                    {totalQuantity > 0 ? (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between font-bold">
+                          <span className="text-[#5B6B68]">المقاسات المختارة:</span>
+                          <span className="font-mono text-emerald-800 text-xs font-black">
+                            {formattedSizeBreakdown}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-1.5 border-t border-emerald-200/60">
+                          <span className="text-[11px] text-[#5B6B68]">
+                            سعر القطعة {unitPrice} ج.م × {totalQuantity} قطعة
+                          </span>
+                          <span className="font-black text-[#0B5F55] text-sm">
+                            الإجمالي: {totalPrice.toLocaleString()} ج.م
+                          </span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-1.5 text-amber-800 font-bold text-[11px]">
+                        <span>⚠️ يرجى تحديد كمية مقاس واحد على الأقل للمتابعة وإضافة التصميم للسلة.</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                /* Flat Quantity Selector for non-clothing products (Mugs, Caps, Stickers) */
+                <div className="pt-3 border-t border-[#D7DEDB]/60 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-xs font-bold text-[#073B35] block">
+                        الكمية المطلوبة من هذا التصميم:
+                      </label>
+                      <span className="text-[10px] text-[#5B6B68]">
+                        سعر القطعة: {unitPrice} ج.م
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        disabled={flatQuantity <= 1}
+                        onClick={() => setFlatQuantity((q) => Math.max(1, q - 1))}
+                        className="w-7 h-7 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-sm transition-colors disabled:opacity-30 cursor-pointer"
+                        title="إنقاص الكمية"
+                      >
+                        -
+                      </button>
+                      <input
+                        type="number"
+                        min="1"
+                        max="999"
+                        value={flatQuantity}
+                        onChange={(e) => setFlatQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-12 h-7 rounded-lg border border-[#D7DEDB] bg-white text-center font-black text-xs text-[#073B35]"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setFlatQuantity((q) => q + 1)}
+                        className="w-7 h-7 rounded-lg bg-[#0B5F55] hover:bg-[#073B35] text-white flex items-center justify-center font-bold text-sm transition-colors cursor-pointer"
+                        title="زيادة الكمية"
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between text-xs">
+                    <span className="text-[#5B6B68]">إجمالي {flatQuantity} قطعة:</span>
+                    <span className="font-black text-[#0B5F55] text-sm">
+                      {totalPrice.toLocaleString()} ج.م
+                    </span>
                   </div>
                 </div>
               )}
@@ -2420,12 +2698,8 @@ export const ProductCustomizer: React.FC = () => {
               {(() => {
                 const totalStock = selectedProduct ? computeTotalStock(selectedProduct) : 50;
                 const isOutOfStock = totalStock <= 0;
-                const isSizeOutOfStock = Boolean(
-                  selectedProduct?.hasSizes &&
-                  selectedProduct.sizeStock &&
-                  (selectedProduct.sizeStock[selectedCustomSize] ?? 1) <= 0
-                );
-                const isDisabled = isOutOfStock || isSizeOutOfStock;
+                const isZeroQuantity = totalQuantity <= 0;
+                const isDisabled = isOutOfStock || isZeroQuantity;
 
                 return (
                   <button
@@ -2442,9 +2716,9 @@ export const ProductCustomizer: React.FC = () => {
                     <span>
                       {isOutOfStock
                         ? 'المنتج نفد من المخزون حالياً ⚠️'
-                        : isSizeOutOfStock
-                        ? `مقاس (${selectedCustomSize}) غير متوفر بالمخزون ⚠️`
-                        : 'إضافة التصميم إلى سلة المشتريات 🛒'}
+                        : isZeroQuantity
+                        ? 'يرجى تحديد كمية المقاسات المطلوبة ⚠️'
+                        : `إضافة التصميم للسلة (${totalQuantity} قطعة · ${totalPrice.toLocaleString()} ج.م) 🛒`}
                     </span>
                   </button>
                 );
@@ -2452,11 +2726,12 @@ export const ProductCustomizer: React.FC = () => {
 
               <button
                 type="button"
+                disabled={totalQuantity <= 0}
                 onClick={handleSendOrder}
-                className="w-full py-3 px-4 bg-[#E3A92F] hover:bg-[#c9911e] text-[#3A2A00] rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all scale-100 hover:scale-101"
+                className="w-full py-3 px-4 bg-[#E3A92F] hover:bg-[#c9911e] text-[#3A2A00] rounded-xl text-sm font-black flex items-center justify-center gap-2 cursor-pointer shadow-md transition-all scale-100 hover:scale-101 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Send className="w-4 h-4" />
-                <span>إرسال وتأكيد الطلب عبر واتساب ⚡</span>
+                <span>إرسال وتأكيد الطلب عبر واتساب ({totalQuantity} قطعة) ⚡</span>
               </button>
 
               <p className="text-[11px] text-[#5B6B68] text-center">

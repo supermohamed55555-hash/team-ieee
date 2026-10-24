@@ -336,10 +336,24 @@ export const Cart: React.FC = () => {
                               </div>
                             )}
 
-                            {item.selectedSize && (
-                              <div className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200">
-                                المقاس: {item.selectedSize}
+                            {item.sizeBreakdown && Object.keys(item.sizeBreakdown).length > 0 ? (
+                              <div className="flex flex-wrap items-center gap-1.5">
+                                <span className="text-[11px] font-bold text-[#5B6B68]">توزيع المقاسات:</span>
+                                {Object.entries(item.sizeBreakdown).map(([sz, qty]) => (
+                                  <span
+                                    key={sz}
+                                    className="px-2 py-0.5 rounded-md bg-emerald-50 text-[#073B35] text-[11px] font-black border border-[#0B5F55]/20"
+                                  >
+                                    {qty}× {sz}
+                                  </span>
+                                ))}
                               </div>
+                            ) : (
+                              item.selectedSize && (
+                                <div className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-[11px] font-bold border border-slate-200">
+                                  المقاس: {item.selectedSize}
+                                </div>
+                              )
                             )}
 
                             {item.customization?.zoneName && (
@@ -375,7 +389,14 @@ export const Cart: React.FC = () => {
 
                     {/* Bottom Row: Quantity Adjuster */}
                     <div className="flex items-center justify-between pt-3 border-t border-slate-100 text-xs">
-                      <span className="text-[#5B6B68] font-medium">الكمية المطلوبة:</span>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[#5B6B68] font-medium">الكمية الإجمالية:</span>
+                        {item.sizeBreakdown && Object.keys(item.sizeBreakdown).length > 0 && (
+                          <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200/60">
+                            موزعة على المقاسات
+                          </span>
+                        )}
+                      </div>
                       
                       <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl border border-slate-200">
                         <button

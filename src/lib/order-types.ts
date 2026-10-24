@@ -25,6 +25,7 @@ export interface CartItem {
   quantity: number;
   selectedColor?: CartItemColor;
   selectedSize?: string; // e.g. 'S', 'M', 'L', 'XL', 'XXL', 'Free Size'
+  sizeBreakdown?: Record<string, number>; // e.g. { 'S': 2, 'M': 5, 'L': 10, 'XL': 3 }
   customization?: CartItemCustomization;
   imageUrl: string;
 }
